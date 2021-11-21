@@ -13,7 +13,6 @@ components:
       description: "Pass your token here. When making a request from your backend, the header should be Authorization: Bearer <your token>"
       type: http
       scheme: bearer
-      bearerFormat: JWT
   schemas:
     errorObject:
       properties:
