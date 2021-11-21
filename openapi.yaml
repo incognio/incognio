@@ -1,0 +1,145 @@
+openapi: 3.0.3
+info:
+  title: Incognio API
+  description: API for managing Incognio chats that are under organisation control
+  version: 1.0.0
+    
+security:
+  - Bearer: [ ]
+    
+components:
+  securitySchemes:
+    Bearer:
+      description: "Pass your token here. When making a request from your backend, the header should be Authorization: Bearer <your token>"
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    errorObject:
+      properties:
+        error:
+          type: string
+    memberStatusMap:
+      additionalProperties:
+        $ref: "#/components/schemas/memberStatus"
+    memberStatus:
+      properties:
+        status:
+          type: string
+          enum:
+            - JOINED
+            - DISCONNECTED
+            
+  
+paths:
+  "/chat/{bot_nickname}/generate-invite":
+    parameters:
+      - name: "bot_nickname"
+        in: path
+        required: true
+        example: "your_incognio_chat_bot"
+        schema:
+          type: string
+      - name: "member_name"
+        in: query
+        example: "Francisc Scaryna"
+        description: Pass this parameter to predefine member name in chat for the user who joins by the generated link. **Optional**.
+        required: false
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 50
+      - name: "validity_minutes"
+        in: query
+        required: false
+        description: Customize validity term for the link. **Optional**.
+        example: 10
+        schema:
+          type: number
+          format: int32
+          minimum: 5
+          maximum: 1440
+          default: 10
+    post:
+      summary: Creates invitation link
+      responses:
+        200: 
+          description: Invite link created
+          content:
+            application/json:
+              schema:
+                properties:
+                  invite:
+                    type: string
+        400: 
+          description: Name is not available in the chat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorObject"
+        404: 
+          description: Chat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorObject"
+  
+  "/chat/{bot_nickname}/kick":
+    parameters:
+      - name: "bot_nickname"
+        example: "your_incognio_chat_bot"
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: "member_name"
+        in: query
+        example: "Francisc Scaryna"
+        description: Member name in chat to kick
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 50
+    put:
+      summary: Kicks the member from the chat (or bans it)
+      responses:
+        200:
+          description: Member has been successfully kicked
+        404: 
+          description: Chat or member not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorObject"
+  
+  "/chat/{bot_nickname}/members":
+    parameters:
+      - name: "bot_nickname"
+        example: "your_incognio_chat_bot"
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: "member_name"
+        in: query
+        example: ["Frank", "Sofia", "Marfa"]
+        description: Retrieve status of the members in chat
+        required: true
+        explode: true
+        schema:
+          type: array
+          minItems: 1
+          items: 
+            type: string
+            minLength: 1
+            maxLength: 50
+    get:
+      responses:
+        200:
+          description: Members of chat with their statuses
+          content:
+            application/json:
+              example: {"Frank": {"status": "JOINED"}, "Marfa": {"status": "DISCONNECTED"}}
+              schema:
+                $ref: "#/components/schemas/memberStatusMap"
