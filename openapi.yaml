@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Incognio API
   description: API for managing Incognio chats that are under organisation control
-  version: 1.0.0
+  version: 1.1.0
     
 security:
   - Bearer: [ ]
@@ -59,6 +59,15 @@ paths:
           minimum: 5
           maximum: 1440
           default: 10
+      - name: "member_chat_id"
+        in: query
+        example: 1234567890
+        description: Pass this parameter to generate personal link, only valid for telegram user with passed chat_id
+        required: false
+        schema:
+          type: number
+          format: int64
+          maxLength: 15
     post:
       summary: Creates invitation link
       responses:
@@ -94,12 +103,21 @@ paths:
       - name: "member_name"
         in: query
         example: "Francisc Scaryna"
-        description: Member name in chat to kick
-        required: true
+        description: Member name in chat to kick. You should pass this or member_chat_id
+        required: false
         schema:
           type: string
           minLength: 1
           maxLength: 50
+      - name: "member_chat_id"
+        in: query
+        example: 1234567890
+        description: Member chat id to kick. You should pass this or member_name
+        required: false
+        schema:
+          type: number
+          format: int64
+          maxLength: 15
     put:
       summary: Kicks the member from the chat (or bans it)
       responses:
