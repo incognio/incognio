@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Incognio API
   description: API for managing Incognio chats that are under organisation control
-  version: 1.1.0
+  version: 1.1.1
     
 security:
   - Bearer: [ ]
@@ -62,7 +62,7 @@ paths:
       - name: "member_chat_id"
         in: query
         example: 1234567890
-        description: Pass this parameter to generate personal link, only valid for telegram user with passed chat_id
+        description: Pass this parameter to generate personal link that only valid for user with that telegram chat_id. **Optional**.
         required: false
         schema:
           type: number
@@ -70,6 +70,7 @@ paths:
           maxLength: 15
     post:
       summary: Creates invitation link
+      description: If member_chat_id passed and the user is already in the chat, there would be no error, but new link.
       responses:
         200: 
           description: Invite link created
@@ -120,6 +121,7 @@ paths:
           maxLength: 15
     put:
       summary: Kicks the member from the chat (or bans it)
+      description: If member_chat_id passed and the user is already kicked / left the chat, there would be no error
       responses:
         200:
           description: Member has been successfully kicked
@@ -160,3 +162,9 @@ paths:
               example: {"Frank": {"status": "JOINED"}, "Marfa": {"status": "DISCONNECTED"}}
               schema:
                 $ref: "#/components/schemas/memberStatusMap"
+        404: 
+          description: Chat not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/errorObject"
